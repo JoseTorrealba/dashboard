@@ -1,7 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
-import { useSession, signOut } from "next-auth/react";
-import { Button } from "@/components/ui/button";
+import { useSession } from "next-auth/react";
 
 export default function User() {
   const { data: session } = useSession();
@@ -23,12 +22,7 @@ export default function User() {
             <span className="text-xs text-muted-foreground">{user?.email || ""}</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => signOut()}>
-            Cerrar sesión
-          </Button>
-          <ChevronDown size={16} />
-        </div>
+        <ChevronDown size={16} />
       </div>
     </div>
   );

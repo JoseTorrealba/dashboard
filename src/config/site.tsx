@@ -1,4 +1,4 @@
-import { Gauge, type LucideIcon, MessagesSquare } from "lucide-react";
+import { Gauge, type LucideIcon, BarChart2 } from "lucide-react";
 
 export type SiteConfig = typeof siteConfig;
 export type Navigation = {
@@ -19,13 +19,13 @@ export const navigations: Navigation[] = [
     href: "/",
   },
   {
-    icon: MessagesSquare,
-    name: "Ticket",
-    href: "/ticket",
-  },
-  {
     icon: Gauge,
     name: "ABC",
     href: "/abc-productos",
+  },
+  {
+    icon: BarChart2,
+    name: "Ventas por hora",
+    href: "/ventas-por-hora",
   },
 ];
