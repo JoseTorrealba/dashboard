@@ -42,30 +42,19 @@ export default function VentasPorHora() {
         values: data,
       },
     ],
-    series: [
-      {
-        type: "bar",
-        encode: {
-          x: "hora",
-          y: "total_ventas",
-        },
-      },
-    ],
+    xField: "hora",
+    yField: "total_ventas",
+    padding: [10, 0, 10, 0],
+    legends: { visible: false },
+    tooltip: { trigger: ["hover"] as ("hover" | "click")[] },
+    bar: {
+      style: { cornerRadius: [8, 8, 8, 8] },
+    },
     axes: [
-      { 
-        type: "band", 
-        field: "hora", 
-        title: { text: "Hora" }
-      },
-      { 
-        type: "linear", 
-        field: "total_ventas", 
-        title: { text: "Total Ventas" }
-      },
+      { orient: "bottom", type: "band" as const, field: "hora", title: "Hora" },
+      { orient: "left", type: "linear" as const, field: "total_ventas", title: "Total Ventas" },
     ],
-    tooltip: { trigger: "hover" },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as unknown as any;
+  };
 
   return (
     <Container className="py-8">
