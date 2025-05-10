@@ -28,4 +28,9 @@ export const navigations: Navigation[] = [
     name: "Ventas por hora",
     href: "/ventas-por-hora",
   },
+  {
+    icon: BarChart2,
+    name: "Ticket promedio diario",
+    href: "/ticket-promedio-diario",
+  },
 ];
