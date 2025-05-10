@@ -1,6 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { pools } from '@/lib/db';
 
+type CountResult = { total: number };
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const anio = searchParams.get('anio');
@@ -14,8 +16,6 @@ export async function GET(req: NextRequest) {
     return new Response(JSON.stringify({ error: 'Tienda no válida' }), { status: 400 });
   }
 
-  console.log('API CALL: get_abc_productos_mensual_guardado', { anio, mes, page, pageSize, tienda });
-
   if (!anio || !mes) {
     return new Response(JSON.stringify({ error: 'Faltan parámetros' }), { status: 400 });
   }
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       `SELECT COUNT(*) as total FROM abc_resultados_mensuales WHERE anio = ? AND mes = ?`,
       [anio, mes]
     );
-    const yaExiste = Array.isArray(existe) ? (existe[0] as any).total > 0 : false;
+    const yaExiste = Array.isArray(existe) ? (existe[0] as CountResult).total > 0 : false;
 
     // 2. Si no existen, ejecuta el procedimiento
     if (!yaExiste) {
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
         `SELECT COUNT(*) as total FROM abc_resultados_mensuales WHERE anio = ? AND mes = ?`,
         [anio, mes]
       );
-      const hayDatos = Array.isArray(verifica) ? (verifica[0] as any).total > 0 : false;
+      const hayDatos = Array.isArray(verifica) ? (verifica[0] as CountResult).total > 0 : false;
       if (!hayDatos) {
         return new Response(JSON.stringify({ error: 'No se generaron datos para ese año/mes.' }), { status: 404 });
       }
@@ -58,13 +58,11 @@ export async function GET(req: NextRequest) {
       `SELECT COUNT(*) as total FROM abc_resultados_mensuales WHERE anio = ? AND mes = ?`,
       [anio, mes]
     );
-    const total = Array.isArray(countResult) ? (countResult[0] as any).total : 0;
+    const total = Array.isArray(countResult) ? (countResult[0] as CountResult).total : 0;
 
-    console.log('API RESULT:', rows);
     return new Response(JSON.stringify({ rows, total }), { status: 200 });
   } catch (error) {
     const err = error as Error;
-    console.error('API ERROR:', err);
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
 } 
