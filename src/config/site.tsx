@@ -33,4 +33,9 @@ export const navigations: Navigation[] = [
     name: "Ticket promedio diario",
     href: "/ticket-promedio-diario",
   },
+  {
+    icon: BarChart2,
+    name: "Buscar producto",
+    href: "/buscar-producto",
+  },
 ];
