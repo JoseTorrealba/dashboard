@@ -11,6 +11,12 @@ interface TicketPromedioDiario {
   ticket_promedio: number;
 }
 
+interface VentasAcumuladasComparadas {
+  fecha: string;
+  acumulado_anterior: number;
+  acumulado_actual: number;
+}
+
 function getYearMonth(monthStr: string) {
   // monthStr es '2025-05' (de <input type="month" />)
   const [anio, mes] = monthStr.split("-").map(Number);
@@ -23,14 +29,20 @@ export default function TicketPromedioDiarioPage() {
   const [tienda, setTienda] = useState("vicuna");
   const [month, setMonth] = useState(defaultMonth);
   const [data, setData] = useState<TicketPromedioDiario[]>([]);
+  const [ventasAcumuladas, setVentasAcumuladas] = useState<VentasAcumuladasComparadas[]>([]);
   const [loading, setLoading] = useState(false);
 
   const consultar = async () => {
     setLoading(true);
-    const { anio, mes } = getYearMonth(month + "-01");
+    const { anio, mes } = getYearMonth(month);
     const res = await fetch(`/api/ticket-promedio-diario?anio=${anio}&mes=${mes}&tienda=${tienda}`);
     const json = await res.json();
     setData(Array.isArray(json) ? json : []);
+
+    // Fetch ventas acumuladas comparadas
+    const resAcum = await fetch(`/api/ventas-acumuladas-comparadas?anio=${anio}&mes=${mes}&tienda=${tienda}`);
+    const jsonAcum = await resAcum.json();
+    setVentasAcumuladas(Array.isArray(jsonAcum) ? jsonAcum : []);
     setLoading(false);
   };
 
@@ -41,6 +53,9 @@ export default function TicketPromedioDiarioPage() {
     total_ventas: d.total_ventas,
     cantidad_tickets: d.cantidad_tickets,
   }));
+
+  // Mapeo de nombre legible de sucursal
+  const sucursalNombre = tienda === "vicuna" ? "Vicuña Mackenna" : "Irarrázaval";
 
   // Gráfico 1: Ticket promedio diario (barra)
   const chartSpecTicketPromedio = {
@@ -62,7 +77,7 @@ export default function TicketPromedioDiarioPage() {
       },
     ],
     axes: [
-      { orient: "bottom", type: "band" as const, field: "fecha", title: { text: "Día del mes", visible: true } },
+      { orient: "bottom", type: "band" as const, field: "fecha", title: { text: `Día del mes (${sucursalNombre})`, visible: true } },
       { orient: "left", type: "linear" as const, field: "ticket_promedio", title: { text: "Ticket promedio ($)", visible: true } },
     ],
     legends: { visible: false },
@@ -90,7 +105,7 @@ export default function TicketPromedioDiarioPage() {
       },
     ],
     axes: [
-      { orient: "bottom", type: "band" as const, field: "fecha", title: { text: "Día del mes", visible: true } },
+      { orient: "bottom", type: "band" as const, field: "fecha", title: { text: `Día del mes (${sucursalNombre})`, visible: true } },
       { orient: "left", type: "linear" as const, field: "cantidad_tickets", title: { text: "Cantidad tickets", visible: true } },
     ],
     legends: { visible: false },
@@ -118,10 +133,50 @@ export default function TicketPromedioDiarioPage() {
       },
     ],
     axes: [
-      { orient: "bottom", type: "band" as const, field: "fecha", title: { text: "Día del mes", visible: true } },
+      { orient: "bottom", type: "band" as const, field: "fecha", title: { text: `Día del mes (${sucursalNombre})`, visible: true } },
       { orient: "left", type: "linear" as const, field: "total_ventas", title: { text: "Total ventas ($)", visible: true } },
     ],
     legends: { visible: false },
+    tooltip: { trigger: ["hover"] as ("hover" | "click")[] },
+    padding: [10, 0, 10, 0],
+  };
+
+  // Gráfico 4: Ventas acumuladas comparadas (línea)
+  const chartSpecVentasAcumuladas = {
+    type: "line",
+    data: [
+      {
+        id: "ventasAcumuladasComparadas",
+        values: ventasAcumuladas.map(d => ({
+          fecha: d.fecha.slice(8, 10),
+          acumulado_anterior: d.acumulado_anterior,
+          acumulado_actual: d.acumulado_actual,
+        })),
+      },
+    ],
+    series: [
+      {
+        type: "line",
+        xField: "fecha",
+        yField: "acumulado_anterior",
+        line: { style: { stroke: "#fbbf24", lineWidth: 3 } },
+        point: { style: { fill: "#fbbf24", size: 6 } },
+        name: "Mes anterior",
+      },
+      {
+        type: "line",
+        xField: "fecha",
+        yField: "acumulado_actual",
+        line: { style: { stroke: "#2563eb", lineWidth: 3 } },
+        point: { style: { fill: "#2563eb", size: 6 } },
+        name: "Mes actual",
+      },
+    ],
+    axes: [
+      { orient: "bottom", type: "band" as const, field: "fecha", title: { text: `Día del mes (${sucursalNombre})`, visible: true } },
+      { orient: "left", type: "linear" as const, field: "acumulado_actual", title: { text: "Ventas acumuladas ($)", visible: true } },
+    ],
+    legends: { visible: true },
     tooltip: { trigger: ["hover"] as ("hover" | "click")[] },
     padding: [10, 0, 10, 0],
   };
@@ -160,12 +215,20 @@ export default function TicketPromedioDiarioPage() {
           <div className="text-center text-muted-foreground">No hay datos para el mes seleccionado.</div>
         )}
       </div>
-      <div className="bg-white rounded shadow p-4">
+      <div className="bg-white rounded shadow p-4 mb-8">
         <h2 className="text-xl font-bold mb-4">Total ventas diario</h2>
         {data.length > 0 ? (
           <VChart spec={chartSpecTotalVentas} style={{ height: 300 }} />
         ) : (
           <div className="text-center text-muted-foreground">No hay datos para el mes seleccionado.</div>
+        )}
+      </div>
+      <div className="bg-white rounded shadow p-4">
+        <h2 className="text-xl font-bold mb-4">Ventas acumuladas comparadas</h2>
+        {ventasAcumuladas.length > 0 ? (
+          <VChart spec={chartSpecVentasAcumuladas} style={{ height: 300 }} />
+        ) : (
+          <div className="text-center text-muted-foreground">No hay datos de ventas acumuladas para el mes seleccionado.</div>
         )}
       </div>
     </Container>
