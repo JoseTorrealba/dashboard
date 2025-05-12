@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { pools } from "@/lib/db";
 import type { RowDataPacket } from "mysql2";
 
