@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Container from "@/components/container";
 import type { IScannerControls } from "@zxing/browser";
 import { BrowserMultiFormatReader } from "@zxing/browser";
+import logger from '@/lib/logger';
 
 interface Producto {
   cod_art: string;
@@ -72,6 +73,7 @@ export default function BuscarProductoPage() {
       if (!codeReaderRef.current) {
         codeReaderRef.current = new BrowserMultiFormatReader();
       }
+      logger.info('Intentando acceder a la cámara para escanear (plataforma: ' + navigator.userAgent + ')');
       codeReaderRef.current.decodeFromVideoDevice(
         undefined,
         videoRef.current,
@@ -82,12 +84,14 @@ export default function BuscarProductoPage() {
             setScanning(false);
             buscar(result.getText());
           }
-          if (err) {
+          if (err && err.name !== 'NotFoundException') {
+            logger.error({ err }, 'Error de escaneo de cámara');
             setError("No se pudo acceder a la cámara o iniciar el escáner");
             setScanning(false);
           }
         }
-      ).catch(() => {
+      ).catch((e) => {
+        logger.error({ e }, 'Error al acceder a la cámara o iniciar el escáner');
         setError("No se pudo acceder a la cámara o iniciar el escáner");
         setScanning(false);
       });
