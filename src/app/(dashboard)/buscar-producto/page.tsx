@@ -57,7 +57,11 @@ export default function BuscarProductoPage() {
         setResult(Array.isArray(json) ? json : []);
       }
       // Llamada a Central Mayorista usando el endpoint local
-      const centralRes = await fetch(`/api/centralmayorista?code=${encodeURIComponent(codeToSearch)}`);
+      let codigoCentral = codeToSearch;
+      if (Array.isArray(json) && json.length > 0 && json[0].cod_barra) {
+        codigoCentral = json[0].cod_barra;
+      }
+      const centralRes = await fetch(`/api/centralmayorista?code=${encodeURIComponent(codigoCentral)}`);
       const productoCentral = await centralRes.json();
       setProductosCentral(Array.isArray(productoCentral) ? productoCentral : []);
     } catch {
@@ -163,9 +167,9 @@ export default function BuscarProductoPage() {
           <table className="min-w-full border text-sm">
             <thead>
               <tr className="bg-slate-100">
-                {["cod_art","descripcion","ultimo_costo","costo_compra","impprecio_ant1","impprecio1","fecha_act_ant","fecha_act"].map((key) => (
+                {["descripcion","ultimo_costo","costo_compra","impprecio_ant1","impprecio1","cod_art","cod_barra","fecha_act_ant","fecha_act"].map((key) => (
                   result.length > 0 && key in result[0] ? (
-                    <th key={key} className="px-4 py-2 border">{key}</th>
+                    <th key={key} className="px-4 py-2 border">{key === 'ultimo_costo' ? 'costo + iva' : key === 'impprecio1' ? 'precio de venta al publico' : key}</th>
                   ) : null
                 ))}
               </tr>
@@ -173,12 +177,12 @@ export default function BuscarProductoPage() {
             <tbody>
               {result.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-4">No se encontró el producto.</td>
+                  <td colSpan={9} className="text-center py-4">No se encontró el producto.</td>
                 </tr>
               ) : (
                 result.map((p, i) => (
                   <tr key={i}>
-                    {["cod_art","descripcion","ultimo_costo","costo_compra","impprecio_ant1","impprecio1","fecha_act_ant","fecha_act"].map((key) => (
+                    {["descripcion","ultimo_costo","costo_compra","impprecio_ant1","impprecio1","cod_art","cod_barra","fecha_act_ant","fecha_act"].map((key) => (
                       key in p ? (
                         <td key={key} className="border px-4 py-2">
                           {typeof p[key] === "number"

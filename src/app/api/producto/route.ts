@@ -32,7 +32,8 @@ export async function GET(request: NextRequest) {
       impprecio_ant1: raw.IMPPRECIO_ANT1,
       impprecio1: raw.IMPPRECIO1,
       fecha_act_ant: raw.FECHA_ACT_ANT,
-      fecha_act: raw.FECHA_ACT
+      fecha_act: raw.FECHA_ACT,
+      cod_barra: raw.cod_barra
     }] : [];
     return new Response(JSON.stringify(result), { status: 200 });
   } catch (error) {
