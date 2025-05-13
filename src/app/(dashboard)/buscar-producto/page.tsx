@@ -191,13 +191,13 @@ export default function BuscarProductoPage() {
       )}
       {error && <div className="text-red-500 mb-4">{error}</div>}
       {result && (
-        <div className="overflow-x-auto">
-          <table className="min-w-full border text-sm">
+        <div className="overflow-x-auto w-full">
+          <table className="min-w-full border text-xs sm:text-sm">
             <thead>
               <tr className="bg-slate-100">
                 {["descripcion","ultimo_costo","costo_compra","impprecio_ant1","impprecio1","cod_art","cod_barra","fecha_act_ant","fecha_act"].map((key) => (
                   result.length > 0 && key in result[0] ? (
-                    <th key={key} className="px-4 py-2 border">{key === 'ultimo_costo' ? 'costo + iva' : key === 'impprecio1' ? 'precio de venta al publico' : key}</th>
+                    <th key={key} className="px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">{key === 'ultimo_costo' ? 'costo + iva' : key === 'impprecio1' ? 'precio de venta al publico' : key}</th>
                   ) : null
                 ))}
               </tr>
@@ -212,7 +212,7 @@ export default function BuscarProductoPage() {
                   <tr key={i}>
                     {["descripcion","ultimo_costo","costo_compra","impprecio_ant1","impprecio1","cod_art","cod_barra","fecha_act_ant","fecha_act"].map((key) => (
                       key in p ? (
-                        <td key={key} className="border px-4 py-2">
+                        <td key={key} className="border px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">
                           {typeof p[key] === "number"
                             ? p[key].toLocaleString("es-CL")
                             : typeof p[key] === "string" && /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(p[key] as string)
@@ -263,7 +263,7 @@ export default function BuscarProductoPage() {
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-2">Registrar precio de proveedor</h2>
           <form
-            className="flex gap-4 items-end mb-4"
+            className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-end mb-4"
             onSubmit={async (e) => {
               e.preventDefault();
               setGuardando(true);
@@ -299,64 +299,66 @@ export default function BuscarProductoPage() {
           >
             <div>
               <label className="block text-xs font-semibold mb-1">Proveedor</label>
-              <input type="text" className="border rounded px-2 py-1" value={proveedor} onChange={e => setProveedor(e.target.value)} required />
+              <input type="text" className="border rounded px-2 py-1 text-xs sm:text-sm w-full" value={proveedor} onChange={e => setProveedor(e.target.value)} required />
             </div>
             <div>
               <label className="block text-xs font-semibold mb-1">Precio</label>
-              <input type="number" className="border rounded px-2 py-1" value={precioProveedor} onChange={e => setPrecioProveedor(e.target.value)} required min="0" step="0.01" />
+              <input type="number" className="border rounded px-2 py-1 text-xs sm:text-sm w-full" value={precioProveedor} onChange={e => setPrecioProveedor(e.target.value)} required min="0" step="0.01" />
             </div>
             <div>
               <label className="block text-xs font-semibold mb-1">Observaciones</label>
-              <input type="text" className="border rounded px-2 py-1" value={observaciones} onChange={e => setObservaciones(e.target.value)} />
+              <input type="text" className="border rounded px-2 py-1 text-xs sm:text-sm w-full" value={observaciones} onChange={e => setObservaciones(e.target.value)} />
             </div>
-            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={guardando}>
+            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded text-xs sm:text-sm w-full sm:w-auto" disabled={guardando}>
               {guardando ? "Guardando..." : "Guardar"}
             </button>
           </form>
           {mensaje && <div className={mensaje.startsWith('¡') ? 'text-green-600 mb-2' : 'text-red-600 mb-2'}>{mensaje}</div>}
           <h2 className="text-lg font-bold mb-2">Historial de precios por proveedor</h2>
-          <table className="min-w-full border text-sm">
-            <thead>
-              <tr className="bg-slate-100">
-                <th className="px-4 py-2 border">Proveedor</th>
-                <th className="px-4 py-2 border">Precio</th>
-                <th className="px-4 py-2 border">Fecha</th>
-                <th className="px-4 py-2 border">Usuario</th>
-                <th className="px-4 py-2 border">Observaciones</th>
-                <th className="px-4 py-2 border">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {historialProveedores.length === 0 ? (
-                <tr><td colSpan={5} className="text-center py-4">Sin registros</td></tr>
-              ) : (
-                historialProveedores.map((h) => (
-                  <tr key={h.id}>
-                    <td className="border px-4 py-2">{h.proveedor}</td>
-                    <td className="border px-4 py-2">{h.precio.toLocaleString("es-CL")}</td>
-                    <td className="border px-4 py-2">{h.fecha ? new Date(h.fecha).toLocaleString() : ""}</td>
-                    <td className="border px-4 py-2">{h.usuario || ""}</td>
-                    <td className="border px-4 py-2">{h.observaciones || ""}</td>
-                    <td className="border px-4 py-2">
-                      <button
-                        className="text-red-600 hover:underline"
-                        title="Eliminar"
-                        onClick={async () => {
-                          if (window.confirm('¿Eliminar este registro?')) {
-                            await fetch(`/api/precios-proveedor/${h.id}?tienda=${tienda}`, { method: 'DELETE' });
-                            // Refrescar historial
-                            fetch(`/api/precios-proveedor?cod_art=${encodeURIComponent(result[0].cod_art)}&tienda=${tienda}`)
-                              .then(res => res.json())
-                              .then(data => setHistorialProveedores(Array.isArray(data) ? data : []));
-                          }
-                        }}
-                      >🗑️</button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto w-full">
+            <table className="min-w-full border text-xs sm:text-sm">
+              <thead>
+                <tr className="bg-slate-100">
+                  <th className="px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">Proveedor</th>
+                  <th className="px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">Precio</th>
+                  <th className="px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">Fecha</th>
+                  <th className="px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">Usuario</th>
+                  <th className="px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">Observaciones</th>
+                  <th className="px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historialProveedores.length === 0 ? (
+                  <tr><td colSpan={5} className="text-center py-4">Sin registros</td></tr>
+                ) : (
+                  historialProveedores.map((h) => (
+                    <tr key={h.id}>
+                      <td className="border px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">{h.proveedor}</td>
+                      <td className="border px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">{h.precio.toLocaleString("es-CL")}</td>
+                      <td className="border px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">{h.fecha ? new Date(h.fecha).toLocaleString() : ""}</td>
+                      <td className="border px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">{h.usuario || ""}</td>
+                      <td className="border px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">{h.observaciones || ""}</td>
+                      <td className="border px-2 py-1 border whitespace-nowrap text-xs sm:text-sm">
+                        <button
+                          className="text-red-600 hover:underline"
+                          title="Eliminar"
+                          onClick={async () => {
+                            if (window.confirm('¿Eliminar este registro?')) {
+                              await fetch(`/api/precios-proveedor/${h.id}?tienda=${tienda}`, { method: 'DELETE' });
+                              // Refrescar historial
+                              fetch(`/api/precios-proveedor?cod_art=${encodeURIComponent(result[0].cod_art)}&tienda=${tienda}`)
+                                .then(res => res.json())
+                                .then(data => setHistorialProveedores(Array.isArray(data) ? data : []));
+                            }
+                          }}
+                        >🗑️</button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </Container>
