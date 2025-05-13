@@ -29,6 +29,17 @@ interface ProductoCentral {
   isAvailable: boolean;
 }
 
+interface PrecioProveedor {
+  id: number;
+  cod_art: string;
+  cod_barra?: string;
+  proveedor: string;
+  precio: number;
+  fecha: string;
+  usuario?: string;
+  observaciones?: string;
+}
+
 export default function BuscarProductoPage() {
   const [code, setCode] = useState("");
   const [tienda, setTienda] = useState("vicuna");
@@ -40,6 +51,12 @@ export default function BuscarProductoPage() {
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const controlsRef = useRef<IScannerControls | null>(null);
   const [productosCentral, setProductosCentral] = useState<ProductoCentral[]>([]);
+  const [proveedor, setProveedor] = useState("");
+  const [precioProveedor, setPrecioProveedor] = useState("");
+  const [observaciones, setObservaciones] = useState("");
+  const [historialProveedores, setHistorialProveedores] = useState<PrecioProveedor[]>([]);
+  const [guardando, setGuardando] = useState(false);
+  const [mensaje, setMensaje] = useState("");
 
   const buscar = async (codigo?: string) => {
     setLoading(true);
@@ -132,6 +149,17 @@ export default function BuscarProductoPage() {
       controlsRef.current = null;
     }
   };
+
+  // Consultar historial de precios por proveedor cuando cambia el producto
+  useEffect(() => {
+    if (result && result.length > 0) {
+      fetch(`/api/precios-proveedor?cod_art=${encodeURIComponent(result[0].cod_art)}&tienda=${tienda}`)
+        .then(res => res.json())
+        .then(data => setHistorialProveedores(Array.isArray(data) ? data : []));
+    } else {
+      setHistorialProveedores([]);
+    }
+  }, [result, tienda]);
 
   return (
     <Container className="py-8">
@@ -229,6 +257,107 @@ export default function BuscarProductoPage() {
       )}
       {productosCentral.length === 0 && code && !loading && (
         <div className="mt-8 text-center text-muted-foreground">No se encontró el producto en Central Mayorista.</div>
+      )}
+      {/* Formulario y tabla de historial de proveedores */}
+      {result && result.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-2">Registrar precio de proveedor</h2>
+          <form
+            className="flex gap-4 items-end mb-4"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setGuardando(true);
+              setMensaje("");
+              const res = await fetch("/api/precios-proveedor", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  cod_art: result[0].cod_art,
+                  cod_barra: result[0].cod_barra,
+                  proveedor,
+                  precio: Number(precioProveedor),
+                  usuario: "usuario-demo", // Cambia por el usuario real si tienes auth
+                  observaciones,
+                  tienda,
+                }),
+              });
+              const data = await res.json();
+              if (res.ok && data.success) {
+                setMensaje("¡Registro guardado exitosamente!");
+                setProveedor("");
+                setPrecioProveedor("");
+                setObservaciones("");
+              } else {
+                setMensaje("Error al guardar el registro");
+              }
+              setGuardando(false);
+              // Refrescar historial
+              fetch(`/api/precios-proveedor?cod_art=${encodeURIComponent(result[0].cod_art)}&tienda=${tienda}`)
+                .then(res => res.json())
+                .then(data => setHistorialProveedores(Array.isArray(data) ? data : []));
+            }}
+          >
+            <div>
+              <label className="block text-xs font-semibold mb-1">Proveedor</label>
+              <input type="text" className="border rounded px-2 py-1" value={proveedor} onChange={e => setProveedor(e.target.value)} required />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-1">Precio</label>
+              <input type="number" className="border rounded px-2 py-1" value={precioProveedor} onChange={e => setPrecioProveedor(e.target.value)} required min="0" step="0.01" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-1">Observaciones</label>
+              <input type="text" className="border rounded px-2 py-1" value={observaciones} onChange={e => setObservaciones(e.target.value)} />
+            </div>
+            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={guardando}>
+              {guardando ? "Guardando..." : "Guardar"}
+            </button>
+          </form>
+          {mensaje && <div className={mensaje.startsWith('¡') ? 'text-green-600 mb-2' : 'text-red-600 mb-2'}>{mensaje}</div>}
+          <h2 className="text-lg font-bold mb-2">Historial de precios por proveedor</h2>
+          <table className="min-w-full border text-sm">
+            <thead>
+              <tr className="bg-slate-100">
+                <th className="px-4 py-2 border">Proveedor</th>
+                <th className="px-4 py-2 border">Precio</th>
+                <th className="px-4 py-2 border">Fecha</th>
+                <th className="px-4 py-2 border">Usuario</th>
+                <th className="px-4 py-2 border">Observaciones</th>
+                <th className="px-4 py-2 border">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {historialProveedores.length === 0 ? (
+                <tr><td colSpan={5} className="text-center py-4">Sin registros</td></tr>
+              ) : (
+                historialProveedores.map((h) => (
+                  <tr key={h.id}>
+                    <td className="border px-4 py-2">{h.proveedor}</td>
+                    <td className="border px-4 py-2">{h.precio.toLocaleString("es-CL")}</td>
+                    <td className="border px-4 py-2">{h.fecha ? new Date(h.fecha).toLocaleString() : ""}</td>
+                    <td className="border px-4 py-2">{h.usuario || ""}</td>
+                    <td className="border px-4 py-2">{h.observaciones || ""}</td>
+                    <td className="border px-4 py-2">
+                      <button
+                        className="text-red-600 hover:underline"
+                        title="Eliminar"
+                        onClick={async () => {
+                          if (window.confirm('¿Eliminar este registro?')) {
+                            await fetch(`/api/precios-proveedor/${h.id}?tienda=${tienda}`, { method: 'DELETE' });
+                            // Refrescar historial
+                            fetch(`/api/precios-proveedor?cod_art=${encodeURIComponent(result[0].cod_art)}&tienda=${tienda}`)
+                              .then(res => res.json())
+                              .then(data => setHistorialProveedores(Array.isArray(data) ? data : []));
+                          }
+                        }}
+                      >🗑️</button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
     </Container>
   );

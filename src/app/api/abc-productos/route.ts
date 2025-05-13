@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { pools } from '@/lib/db';
+import logger from '@/lib/logger';
 
 type CountResult = { total: number };
 
@@ -11,12 +12,16 @@ export async function GET(req: NextRequest) {
   const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
   const tienda = searchParams.get('tienda') || 'vicuna';
 
+  logger.info({ anio, mes, page, pageSize, tienda }, 'GET /api/abc-productos params');
+
   const pool = pools[tienda as 'vicuna' | 'irarrazaval'];
   if (!pool) {
+    logger.error('Tienda no válida');
     return new Response(JSON.stringify({ error: 'Tienda no válida' }), { status: 400 });
   }
 
   if (!anio || !mes) {
+    logger.error('Faltan parámetros anio o mes');
     return new Response(JSON.stringify({ error: 'Faltan parámetros' }), { status: 400 });
   }
 
@@ -62,6 +67,7 @@ export async function GET(req: NextRequest) {
 
     return new Response(JSON.stringify({ rows, total }), { status: 200 });
   } catch (error) {
+    logger.error({ error }, 'Error en /api/abc-productos');
     const err = error as Error;
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
