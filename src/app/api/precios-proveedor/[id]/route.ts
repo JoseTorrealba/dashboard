@@ -2,8 +2,9 @@ import type { NextRequest } from "next/server";
 import { pools } from "@/lib/db";
 import logger from '@/lib/logger';
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function DELETE(request: NextRequest, context: any) {
+  const { id } = context.params;
   const url = new URL(request.url);
   const tienda = url.searchParams.get('tienda') || 'vicuna';
   logger.info({ id, tienda }, 'Intento de eliminar precio proveedor');
