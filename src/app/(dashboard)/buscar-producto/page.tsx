@@ -84,7 +84,16 @@ export default function BuscarProductoPage() {
             setScanning(false);
             buscar(result.getText());
           }
-          if (err && err.name !== 'NotFoundException') {
+          if (err) {
+            // Ignora errores de no detección de código
+            if (
+              err.name === 'NotFoundException' ||
+              err.message?.includes('No MultiFormat Readers were able to detect the code')
+            ) {
+              // No hacer nada, seguir escaneando
+              return;
+            }
+            // Solo aquí es error crítico
             logger.error({ err }, 'Error de escaneo de cámara');
             setError("No se pudo acceder a la cámara o iniciar el escáner");
             setScanning(false);
