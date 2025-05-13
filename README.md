@@ -91,3 +91,45 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [VisActor](https://visactor.io/) - For the amazing visualization library
 - [Vercel](https://vercel.com) - For the incredible deployment platform
 - [Next.js](https://nextjs.org/) - For the awesome React framework
+
+
+
+
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS get_producto_por_codigo $$
+
+CREATE PROCEDURE get_producto_por_codigo(IN p_codigo VARCHAR(50))
+BEGIN
+    DECLARE v_cod_art INT;
+
+    -- Buscar por código de barras exacto (misma collation para evitar errores)
+    SELECT cb.cod_art 
+    INTO v_cod_art
+    FROM codigosdebarra cb
+    WHERE cb.cod_barra COLLATE latin1_swedish_ci = p_codigo COLLATE latin1_swedish_ci
+    LIMIT 1;
+
+    -- Si no se encontró, intenta tratarlo como código de producto numérico
+    IF v_cod_art IS NULL THEN
+        SET v_cod_art = CAST(p_codigo AS UNSIGNED);
+    END IF;
+
+    -- Retornar los campos específicos
+    SELECT 
+        p.COD_ART,
+        p.descripcion,
+        p.ultimo_costo,
+        p.costo_compra,
+        pr.IMPPRECIO_ANT1, pr.IMPPRECIO1,
+        pr.FECHA_ACT_ANT, pr.FECHA_ACT
+    FROM productos p
+    JOIN precios pr ON pr.cod_art = p.cod_art AND pr.cod_empresa = p.cod_empresa
+    WHERE p.cod_art = v_cod_art
+      AND p.cod_empresa = 1
+      AND pr.cod_lista = 1
+    LIMIT 1;
+END $$
+
+DELIMITER ;

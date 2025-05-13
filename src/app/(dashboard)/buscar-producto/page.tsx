@@ -9,8 +9,17 @@ import logger from '@/lib/logger';
 interface Producto {
   cod_art: string;
   descripcion: string;
-  preciobruto: number;
-  impprecio1: number;
+  ultimo_costo?: number;
+  costo_compra?: number;
+  precio_ant1?: number;
+  precio1?: number;
+  margen_ant1?: number;
+  margen1?: number;
+  impprecio_ant1?: number;
+  impprecio1?: number;
+  fecha_act_ant?: string;
+  fecha_act?: string;
+  [key: string]: string | number | undefined;
 }
 
 interface ProductoCentral {
@@ -154,29 +163,33 @@ export default function BuscarProductoPage() {
           <table className="min-w-full border text-sm">
             <thead>
               <tr className="bg-slate-100">
-                {result.length > 0 && Object.keys(result[0]).map((key) => (
-                  <th key={key} className="px-4 py-2 border">{key}</th>
+                {["cod_art","descripcion","ultimo_costo","costo_compra","impprecio_ant1","impprecio1","fecha_act_ant","fecha_act"].map((key) => (
+                  result.length > 0 && key in result[0] ? (
+                    <th key={key} className="px-4 py-2 border">{key}</th>
+                  ) : null
                 ))}
               </tr>
             </thead>
             <tbody>
               {result.length === 0 ? (
                 <tr>
-                  <td colSpan={result[0] ? Object.keys(result[0]).length : 1} className="text-center py-4">No se encontró el producto.</td>
+                  <td colSpan={8} className="text-center py-4">No se encontró el producto.</td>
                 </tr>
               ) : (
                 result.map((p, i) => (
                   <tr key={i}>
-                    {Object.entries(p).map(([key, value]) => (
-                      <td key={key} className="border px-4 py-2">
-                        {typeof value === "number"
-                          ? value.toLocaleString("es-CL")
-                          : value instanceof Date
-                            ? value.toISOString()
-                            : value != null
-                              ? value.toString()
-                              : ""}
-                      </td>
+                    {["cod_art","descripcion","ultimo_costo","costo_compra","impprecio_ant1","impprecio1","fecha_act_ant","fecha_act"].map((key) => (
+                      key in p ? (
+                        <td key={key} className="border px-4 py-2">
+                          {typeof p[key] === "number"
+                            ? p[key].toLocaleString("es-CL")
+                            : typeof p[key] === "string" && /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(p[key] as string)
+                              ? new Date(p[key] as string).toISOString()
+                              : p[key] != null
+                                ? p[key].toString()
+                                : ""}
+                        </td>
+                      ) : null
                     ))}
                   </tr>
                 ))

@@ -27,18 +27,10 @@ export async function GET(request: NextRequest) {
     const result = raw ? [{
       cod_art: raw.COD_ART,
       descripcion: raw.descripcion,
-      precio_ant1: raw.PRECIO_ANT1,
-      precio1: raw.PRECIO1,
-      precio_ant2: raw.PRECIO_ANT2,
-      precio2: raw.PRECIO2,
-      precio_ant3: raw.PRECIO_ANT3,
-      precio3: raw.PRECIO3,
-      margen_ant1: raw.MARGEN_ANT1,
-      margen1: raw.MARGEN1,
+      ultimo_costo: raw.ultimo_costo ? Number((raw.ultimo_costo * 1.19).toFixed(4)) : undefined,
+      costo_compra: raw.costo_compra,
       impprecio_ant1: raw.IMPPRECIO_ANT1,
       impprecio1: raw.IMPPRECIO1,
-      impprecio_ant2: raw.IMPPRECIO_ANT2,
-      impprecio2: raw.IMPPRECIO2,
       fecha_act_ant: raw.FECHA_ACT_ANT,
       fecha_act: raw.FECHA_ACT
     }] : [];
