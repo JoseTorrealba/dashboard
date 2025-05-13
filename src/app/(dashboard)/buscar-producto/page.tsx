@@ -164,23 +164,23 @@ export default function BuscarProductoPage() {
   return (
     <Container className="py-8">
       <h1 className="text-3xl font-bold mb-6">Buscar producto</h1>
-      <div className="flex gap-4 mb-6 items-center">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 items-stretch sm:items-center w-full">
         <select className="border rounded px-2 py-1" value={tienda} onChange={e => setTienda(e.target.value)}>
           <option value="vicuna">Vicuña Mackenna</option>
           <option value="irarrazaval">Irarrázaval</option>
         </select>
         <input
           type="text"
-          className="border rounded px-2 py-1"
+          className="border rounded px-2 py-1 text-xs sm:text-sm w-full sm:w-auto"
           placeholder="Código o código de barra"
           value={code}
           onChange={e => setCode(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <Button onClick={() => buscar()} disabled={loading || !code}>
+        <Button onClick={() => buscar()} disabled={loading || !code} className="w-full sm:w-auto">
           {loading ? "Buscando..." : "Buscar"}
         </Button>
-        <Button variant="outline" onClick={scanning ? stopScan : startScan}>
+        <Button variant="outline" onClick={scanning ? stopScan : startScan} className="w-full sm:w-auto">
           {scanning ? "Detener escáner" : "Escanear"}
         </Button>
       </div>
