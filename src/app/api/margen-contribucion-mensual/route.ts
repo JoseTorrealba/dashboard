@@ -20,6 +20,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Ejecuta el procedimiento almacenado y espera a que termine
+    await pool.query('CALL get_margen_contribucion_mensual(?, ?)', [anio, mes]);
     // Consulta paginada
     const offset = (page - 1) * pageSize;
     const [rows] = await pool.query(
