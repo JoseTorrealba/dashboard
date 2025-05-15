@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     return new Response(JSON.stringify({ error: "Tienda no válida" }), { status: 400 });
   }
 
-  const sql = `CALL get_producto_por_codigo(?)`;
+  const sql = `CALL get_producto(?)`;
   try {
     const [rows] = await pool.execute<RowDataPacket[][]>(sql, [code]);
 

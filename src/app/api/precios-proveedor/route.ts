@@ -5,7 +5,7 @@ import logger from '@/lib/logger';
 export async function POST(request: NextRequest) {
   const body = await request.json();
   logger.info({ body }, 'Datos recibidos en POST /api/precios-proveedor');
-  const { cod_art, cod_barra, proveedor, precio, usuario, observaciones, tienda = 'vicuna' } = body;
+  const { cod_art, cod_barra: _cod_barra, proveedor, precio, usuario, observaciones, tienda = 'vicuna' } = body;
   const pool = pools[tienda as 'vicuna' | 'irarrazaval'];
   if (!pool) {
     logger.error('Tienda no válida');

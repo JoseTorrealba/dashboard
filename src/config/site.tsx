@@ -38,4 +38,14 @@ export const navigations: Navigation[] = [
     name: "Buscar producto",
     href: "/buscar-producto",
   },
+  {
+    icon: BarChart2,
+    name: "Ventas manuales",
+    href: "/ventas-manuales",
+  },
+  {
+    icon: BarChart2,
+    name: "MCM",
+    href: "/margen-contribucion-mensual",
+  },
 ];
