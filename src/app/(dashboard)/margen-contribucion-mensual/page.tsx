@@ -22,13 +22,7 @@ export default function MargenContribucionMensualPage() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 30;
-
-  // Leer gastos desde variable de entorno
-  const gastosPorTienda = typeof process !== "undefined" && process.env.NEXT_PUBLIC_GASTOS_TIENDAS_JSON
-    ? JSON.parse(process.env.NEXT_PUBLIC_GASTOS_TIENDAS_JSON)
-    : {};
-
-  const gasto = gastosPorTienda[tienda]?.[anio]?.[mes] ?? 0;
+  const [gasto, setGasto] = useState(0);
 
   const consultar = async (p = 1) => {
     setLoading(true);
@@ -39,6 +33,11 @@ export default function MargenContribucionMensualPage() {
     setMargenTotal(json.margen_contribucion_total || 0);
     setLoading(false);
     setPage(p);
+
+    // Consultar el total de gastos desde el backend
+    const resGasto = await fetch(`/api/gastos-mensuales/total?tienda=${tienda}&anio=${anio}&mes=${mes}`);
+    const jsonGasto = await resGasto.json();
+    setGasto(jsonGasto.total_gasto || 0);
   };
 
   return (
