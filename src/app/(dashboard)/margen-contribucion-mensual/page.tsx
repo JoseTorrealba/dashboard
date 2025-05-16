@@ -23,6 +23,13 @@ export default function MargenContribucionMensualPage() {
   const [page, setPage] = useState(1);
   const pageSize = 30;
 
+  // Leer gastos desde variable de entorno
+  const gastosPorTienda = typeof process !== "undefined" && process.env.NEXT_PUBLIC_GASTOS_TIENDAS_JSON
+    ? JSON.parse(process.env.NEXT_PUBLIC_GASTOS_TIENDAS_JSON)
+    : {};
+
+  const gasto = gastosPorTienda[tienda]?.[anio]?.[mes] ?? 0;
+
   const consultar = async (p = 1) => {
     setLoading(true);
     const res = await fetch(`/api/margen-contribucion-mensual?anio=${anio}&mes=${mes}&tienda=${tienda}&page=${p}&pageSize=${pageSize}`);
@@ -51,6 +58,10 @@ export default function MargenContribucionMensualPage() {
         <Button onClick={() => consultar(1)} disabled={loading} className="w-full sm:w-auto">
           {loading ? "Consultando..." : "Consultar"}
         </Button>
+      </div>
+      <div className="mb-2">
+        <span className="text-lg font-semibold">Gasto tienda: </span>
+        <span className="text-2xl font-bold text-red-700">{Number(gasto).toLocaleString("es-CL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
       </div>
       <div className="mb-4">
         <span className="text-lg font-semibold">Total MCM: </span>

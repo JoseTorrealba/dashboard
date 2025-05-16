@@ -48,4 +48,9 @@ export const navigations: Navigation[] = [
     name: "MCM",
     href: "/margen-contribucion-mensual",
   },
+  {
+    icon: BarChart2,
+    name: "Gastos mensuales",
+    href: "/gastos-mensuales",
+  },
 ];
